@@ -1,0 +1,22 @@
+<launch>
+
+    <!-- start the Kinect -->
+    <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" >
+        <arg name="publish_tf" value="true"/>
+        <arg name="min_depth" value="0.2"/>
+        <arg name="max_depth" value="0.85"/>
+        <arg name="output" value="screen"/>
+    </include>
+
+    <!-- start the rviz -->
+    <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="-d $(find gpd_ros)/launch/gpd.rviz" output="screen" />
+
+    <!-- <node pkg="tf" type="static_transform_publisher" name="head_link_publisher" args="0.2 0.0 0.0 -0.0564438 -0.122019 0.816968 0.560792 kinect2_rgb_optical_frame grasp 100" /> -->
+    <node pkg="tf" type="static_transform_publisher" name="head_link_publisher" args="-0.0447608 0.0519827 0.567234 -0.0335705 -0.690143 0.33379 0.641218 kinect2_rgb_optical_frame grasp 100" />
+
+</launch>
+
+<!-- quaternion2 x: -0.0335705
+quaternion2 y: -0.690143
+quaternion2 z: 0.33379
+quaternion2 w: 0.641218 -->
