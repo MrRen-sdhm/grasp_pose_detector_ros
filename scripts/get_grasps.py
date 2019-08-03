@@ -11,7 +11,9 @@ from transforms3d import quaternions # http://matthew-brett.github.io/transforms
 from gpd_ros.msg import GraspConfigList
 
 
-min_score = -2000
+min_score = 0.95
+# camera_frame = "kinect2_rgb_optical_frame"
+camera_frame = "camera_color_optical_frame"
 
 
 def callback(msg):
@@ -41,13 +43,13 @@ def callback(msg):
             quaternion_z = quaternions.axangle2quat([0, 0, 1], np.pi/2) # 绕z轴旋转90度的四元数
             # 四元数相乘，即将原抓取姿态绕y轴旋转90度, 再绕z轴旋转90度，目的为使抓取姿态坐标系与末端执行器坐标系匹配
             quaternion = quaternions.qmult(quaternion, quaternion_y) 
-            quaternion = quaternions.qmult(quaternion, quaternion_z)
+            # quaternion = quaternions.qmult(quaternion, quaternion_z)
             print "\033[0;32m%s\033[0m" % "[INFO GRASP] Quaternion:", quaternion, "\n"
 
             br = tf.TransformBroadcaster()
             br.sendTransform((grasps[0].position.x, grasps[0].position.y, grasps[0].position.z), # (x, y , z)
                         (quaternion[1], quaternion[2], quaternion[3], quaternion[0]), # (x, y, z, w)
-                        rospy.Time.now(), "grasp", "kinect2_rgb_optical_frame")
+                        rospy.Time.now(), "grasp", camera_frame)
 
 
 # Create a ROS node.

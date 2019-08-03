@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(gpd_ros)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions message_generation roscpp rospy sensor_msgs std_msgs)
+set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
+
+# Find catkin macros and libraries
+find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions message_generation roscpp rospy sensor_msgs
+        std_msgs message_filters cv_bridge image_transport compressed_image_transport compressed_depth_image_transport)
+
+# OpenMP
+find_package(OpenMP)
 
 # PCL
 find_package(PCL REQUIRED)
@@ -36,9 +40,6 @@ else()
 endif()
 include_directories(${GPD_POINTNET_LIBRARY_INCLUDE_DIR})
 message(STATUS "gpd_pointnet_include_dir: ${GPD_POINTNET_LIBRARY_INCLUDE_DIR}")
-
-
-set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
 
 ## Generate messages in the 'msg' folder
 add_message_files(FILES CloudIndexed.msg CloudSamples.msg CloudSources.msg GraspConfig.msg GraspConfigList.msg
@@ -82,11 +83,13 @@ add_library(${PROJECT_NAME}_grasp_plotter src/${PROJECT_NAME}/grasp_plotter.cpp)
 ## Declare a C++ executable
 add_executable(${PROJECT_NAME}_detect_grasps src/gpd_ros/grasp_detection_node.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_pointnet src/gpd_ros/grasp_detection_pointnet.cpp)
+add_executable(${PROJECT_NAME}_detect_grasps_pointnet_realsense src/gpd_ros/grasp_detection_pointnet_realsense.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_server src/gpd_ros/grasp_detection_server.cpp)
 
 ## Rename C++ executable without prefix
 set_target_properties(${PROJECT_NAME}_detect_grasps PROPERTIES OUTPUT_NAME detect_grasps PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_pointnet PROPERTIES OUTPUT_NAME detect_grasps_pointnet PREFIX "")
+set_target_properties(${PROJECT_NAME}_detect_grasps_pointnet_realsense PROPERTIES OUTPUT_NAME detect_grasps_pointnet_realsense PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_server PROPERTIES OUTPUT_NAME detect_grasps_server PREFIX "")
 
 ## Specify libraries to link a library or executable target against
@@ -98,6 +101,13 @@ target_link_libraries(${PROJECT_NAME}_detect_grasps
                       ${catkin_LIBRARIES}
                       ${TORCH_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}_detect_grasps_pointnet
+                      ${PROJECT_NAME}_grasp_messages
+                      ${PROJECT_NAME}_grasp_plotter
+                      ${GPD_POINTNET_LIBRARY}
+                      ${PCL_LIBRARIES}
+                      ${catkin_LIBRARIES}
+                      ${TORCH_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_detect_grasps_pointnet_realsense
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_POINTNET_LIBRARY}
