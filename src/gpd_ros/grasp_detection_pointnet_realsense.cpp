@@ -16,13 +16,10 @@ GraspDetectionPointnet::GraspDetectionPointnet(ros::NodeHandle& node)
     std::string rviz_topic;
     node.param("rviz_topic", rviz_topic, std::string("grasps_rviz"));
 
-    if (!rviz_topic.empty())
-    {
+    if (!rviz_topic.empty()) {
         grasps_rviz_pub_ = node.advertise<visualization_msgs::MarkerArray>(rviz_topic, 1);
         use_rviz_ = true;
-    }
-    else
-    {
+    } else {
         use_rviz_ = false;
     }
 
@@ -33,8 +30,6 @@ GraspDetectionPointnet::GraspDetectionPointnet(ros::NodeHandle& node)
 
     rviz_plotter_ = new GraspPlotter(node, grasp_detector_->getHandSearchParameters().hand_geometry_);
 
-    node.getParam("workspace", workspace_);
-
     /// Realsense cloud and image receiver
     std::string ns = R2_DEFAULT_NS;
     std::string topicColor = R2_TOPIC_IMAGE_COLOR R2_TOPIC_IMAGE_RAW;
@@ -44,15 +39,15 @@ GraspDetectionPointnet::GraspDetectionPointnet(ros::NodeHandle& node)
     topicColor = "/" + ns + topicColor;
     topicDepth = "/" + ns + topicDepth;
 
-    receiver = std::make_shared<RealsenseReceiver>(topicColor, topicDepth, useExact, useCompressed);
+    receiver = std::make_shared<RealsenseReceiver>(node, topicColor, topicDepth, useExact, useCompressed);
 
     ROS_INFO("Starting realsense receiver...");
     receiver->run();
 }
 
-void GraspDetectionPointnet::run()
+void GraspDetectionPointnet::run(int loop_rate)
 {
-    ros::Rate rate(30); // 与采集频率接近即可
+    ros::Rate rate(loop_rate); // 与采集频率接近即可
     while (ros::ok())
     {
         collect_cloud(); // 获取点云
@@ -63,6 +58,8 @@ void GraspDetectionPointnet::run()
         // Visualize the detected grasps in rviz.
         if (use_rviz_)
         {
+            printf("Visualize the detected grasps in rviz.\n");
+            printf("frame:%s\n", frame_.c_str());
             rviz_plotter_->drawGrasps(grasps, frame_);
         }
 
@@ -106,11 +103,19 @@ void GraspDetectionPointnet::cloud_callback(const sensor_msgs::PointCloud2& msg)
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "detect_grasps_pointnet_realsense");
+    ros::init(argc, argv, "detect_grasps_pointnet_realsense", ros::init_options::AnonymousName);
     ros::NodeHandle node("~");
 
-    GraspDetectionPointnet grasp_detection(node);
-    grasp_detection.run();
+    if(!ros::ok())
+    {
+        return 1;
+    }
 
+    int loop_rate = 15; // 与采集频率接近即可
+
+    GraspDetectionPointnet grasp_detection(node);
+    grasp_detection.run(loop_rate);
+
+    ros::shutdown();
     return 0;
 }

@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by sdhm on 7/18/19.
 // 读取sensor_msgs/Image以及sensor_msgs/CameraInfo, 通过深度图和相机参数创建点云, 显示和保存和彩色图像
@@ -54,9 +56,7 @@ private:
     const bool useExact, useCompressed;
 
     bool updateImage, updateCloud;
-    bool save;
     bool running;
-    size_t frame;
     const size_t queueSize;
 
     cv::Mat cameraMatrixColor, cameraMatrixDepth;
@@ -79,10 +79,9 @@ private:
     std::vector<int> params;
 
 public:
-    RealsenseReceiver(std::string topicColor, const std::string &topicDepth, const bool useExact, const bool useCompressed)
-            : topicColor(std::move(topicColor)), topicDepth(topicDepth), useExact(useExact), useCompressed(useCompressed),
-              updateImage(false), updateCloud(false), save(false), running(false), frame(0), queueSize(5),
-              nh("~"), spinner(0), it(nh)
+    RealsenseReceiver(const ros::NodeHandle& node, std::string topicColor, std::string topicDepth, const bool useExact, const bool useCompressed)
+            : topicColor(std::move(topicColor)), topicDepth(std::move(topicDepth)), useExact(useExact), useCompressed(useCompressed),
+              updateImage(false), updateCloud(false), running(false), queueSize(5), nh(node), spinner(0), it(nh)
     {
         cameraMatrixColor = cv::Mat::zeros(3, 3, CV_64F);
         cameraMatrixDepth = cv::Mat::zeros(3, 3, CV_64F);
@@ -144,7 +143,7 @@ private:
         cloud->points.resize(cloud->height * cloud->width);
         createLookup(this->color.cols, this->color.rows);
 
-        cloudReceiverThread = std::thread(&RealsenseReceiver::cloudReceiver, this); ; // 获取和生成点云
+        cloudReceiverThread = std::thread(&RealsenseReceiver::cloudReceiver, this); // 获取和生成点云
     }
 
     void stop()
@@ -168,8 +167,8 @@ private:
         running = false;
     }
 
-    void callback(const sensor_msgs::Image::ConstPtr& imageColor, const sensor_msgs::Image::ConstPtr imageDepth,
-                  const sensor_msgs::CameraInfo::ConstPtr& cameraInfoColor, const sensor_msgs::CameraInfo::ConstPtr cameraInfoDepth)
+    void callback(const sensor_msgs::Image::ConstPtr& imageColor, const sensor_msgs::Image::ConstPtr& imageDepth,
+                  const sensor_msgs::CameraInfo::ConstPtr& cameraInfoColor, const sensor_msgs::CameraInfo::ConstPtr& cameraInfoDepth)
     {
         cv::Mat color, depth;
 
@@ -227,7 +226,7 @@ private:
         pCvImage->image.copyTo(image);
     }
 
-    void readCameraInfo(const sensor_msgs::CameraInfo::ConstPtr cameraInfo, cv::Mat &cameraMatrix) const
+    void readCameraInfo(const sensor_msgs::CameraInfo::ConstPtr& cameraInfo, cv::Mat &cameraMatrix) const
     {
         double *itC = cameraMatrix.ptr<double>(0, 0);
         for(size_t i = 0; i < 9; ++i, ++itC)

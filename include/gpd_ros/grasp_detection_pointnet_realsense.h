@@ -71,7 +71,7 @@ public:
     /**
      * \brief Run the ROS node. Loops while waiting for incoming ROS messages.
     */
-    void run();
+    void run(int loop_rate);
 
     /**
      * \brief Detect grasp poses in a point cloud received from a ROS topic.
@@ -106,7 +106,6 @@ private:
     ros::Publisher grasps_rviz_pub_; ///< ROS publisher for grasps in rviz (visualization)
 
     bool use_rviz_; ///< if rviz is used for visualization instead of PCL
-    std::vector<double> workspace_; ///< workspace limits
 
     gpd::GraspDetectorPointNet* grasp_detector_; ///< used to run the GPD algorithm
     GraspPlotter* rviz_plotter_; ///< used to plot detected grasps in rviz
