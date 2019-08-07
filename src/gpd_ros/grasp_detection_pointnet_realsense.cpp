@@ -103,7 +103,7 @@ void GraspDetectionPointnet::cloud_callback(const sensor_msgs::PointCloud2& msg)
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "detect_grasps_pointnet_realsense", ros::init_options::AnonymousName);
+    ros::init(argc, argv, "detect_grasps_pointnet_realsense");
     ros::NodeHandle node("~");
 
     if(!ros::ok())

@@ -97,7 +97,6 @@ public:
     void run()
     {
         start();
-        stop();
     }
 
 private:
@@ -183,6 +182,8 @@ private:
         updateImage = true;
         updateCloud = true;
         lock.unlock();
+
+//        ROS_INFO("Received new image and depth.");
     }
 
     void cloudReceiver()
@@ -197,6 +198,7 @@ private:
 
         createCloud(depth, color, cloud);
 
+        ros::Rate rate(15);
         for(; running && ros::ok();)
         {
             if(updateCloud)
@@ -209,7 +211,12 @@ private:
 
                 createCloud(depth, color, cloud);
             }
+
+//            ros::spinOnce();
+            rate.sleep();
         }
+
+        stop();
     }
 
     void readRgbImage(const sensor_msgs::Image::ConstPtr& msgImage, cv::Mat &image) const

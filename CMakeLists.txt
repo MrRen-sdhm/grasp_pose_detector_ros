@@ -4,11 +4,29 @@ project(gpd_ros)
 set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
 
 # Find catkin macros and libraries
+#find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions message_generation roscpp rospy sensor_msgs
+#        std_msgs message_filters cv_bridge image_transport compressed_image_transport compressed_depth_image_transport)
+# Opencv 3.4 配置, cv相关的库不使用catkin查找
 find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions message_generation roscpp rospy sensor_msgs
-        std_msgs message_filters cv_bridge image_transport compressed_image_transport compressed_depth_image_transport)
+        std_msgs message_filters)
+find_package(cv_bridge)
+find_package(image_transport)
+find_package(compressed_image_transport)
+find_package(compressed_depth_image_transport)
+
+# Opencv3.4
+find_package(OpenCV 3.4 REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+message(STATUS "OpenCV library status:")
+message(STATUS "    version: ${OpenCV_VERSION}")
+message(STATUS "    libraries: ${OpenCV_LIBRARIES}")
+message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # OpenMP
 find_package(OpenMP)
+if(OPENMP_FOUND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 # PCL
 find_package(PCL REQUIRED)
@@ -75,6 +93,7 @@ DEPENDS PCL
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+message(STATUS "catkin_INCLUDE_DIRS: ${catkin_INCLUDE_DIRS}")
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}_grasp_messages src/${PROJECT_NAME}/grasp_messages.cpp)
@@ -84,12 +103,14 @@ add_library(${PROJECT_NAME}_grasp_plotter src/${PROJECT_NAME}/grasp_plotter.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps src/gpd_ros/grasp_detection_node.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_pointnet src/gpd_ros/grasp_detection_pointnet.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_pointnet_realsense src/gpd_ros/grasp_detection_pointnet_realsense.cpp)
+add_executable(${PROJECT_NAME}_detect_grasps_yolo src/gpd_ros/grasp_detection_yolo.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_server src/gpd_ros/grasp_detection_server.cpp)
 
 ## Rename C++ executable without prefix
 set_target_properties(${PROJECT_NAME}_detect_grasps PROPERTIES OUTPUT_NAME detect_grasps PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_pointnet PROPERTIES OUTPUT_NAME detect_grasps_pointnet PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_pointnet_realsense PROPERTIES OUTPUT_NAME detect_grasps_pointnet_realsense PREFIX "")
+set_target_properties(${PROJECT_NAME}_detect_grasps_yolo PROPERTIES OUTPUT_NAME detect_grasps_yolo PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_server PROPERTIES OUTPUT_NAME detect_grasps_server PREFIX "")
 
 ## Specify libraries to link a library or executable target against
@@ -98,29 +119,48 @@ target_link_libraries(${PROJECT_NAME}_detect_grasps
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_LIBRARY}
                       ${PCL_LIBRARIES}
-                      ${catkin_LIBRARIES}
-                      ${TORCH_LIBRARIES})
+                      ${TORCH_LIBRARIES}
+#                      ${catkin_LIBRARIES}
+                      ${image_transport_LIBRARIES}
+                      ${cv_bridge_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}_detect_grasps_pointnet
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_POINTNET_LIBRARY}
                       ${PCL_LIBRARIES}
-                      ${catkin_LIBRARIES}
-                      ${TORCH_LIBRARIES})
+                      ${TORCH_LIBRARIES}
+#                      ${catkin_LIBRARIES}
+                      ${image_transport_LIBRARIES}
+                      ${cv_bridge_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}_detect_grasps_pointnet_realsense
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_POINTNET_LIBRARY}
                       ${PCL_LIBRARIES}
-                      ${catkin_LIBRARIES}
-                      ${TORCH_LIBRARIES})
+                      ${TORCH_LIBRARIES}
+#                      ${catkin_LIBRARIES}
+                      ${image_transport_LIBRARIES}
+                      ${cv_bridge_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_detect_grasps_yolo
+                      ${PROJECT_NAME}_grasp_messages
+                      ${PROJECT_NAME}_grasp_plotter
+                      ${GPD_POINTNET_LIBRARY}
+                      ${PCL_LIBRARIES}
+                      ${OpenCV_LIBS}
+                      ${TORCH_LIBRARIES}
+#                      ${catkin_LIBRARIES}
+                      ${image_transport_LIBRARIES}
+                      ${cv_bridge_LIBRARIES}
+                      )
 target_link_libraries(${PROJECT_NAME}_detect_grasps_server
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_LIBRARY}
                       ${PCL_LIBRARIES}
-                      ${catkin_LIBRARIES}
-                      ${TORCH_LIBRARIES})
+                      ${TORCH_LIBRARIES}
+#                      ${catkin_LIBRARIES}
+                      ${image_transport_LIBRARIES}
+                      ${cv_bridge_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}_grasp_plotter
                       ${GPD_LIBRARY}
                       ${catkin_LIBRARIES})
