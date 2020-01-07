@@ -6,7 +6,7 @@ GraspDetectionPointnet::GraspDetectionPointnet(ros::NodeHandle& node)
     cloud_camera_ = NULL;
 
     std::string cfg_file;
-    node.param("config_file", cfg_file, std::string("/home/sdhm/catkin_ws/src/gpd_ros/cfg/ros_gpd_pointnet_params.cfg"));
+    node.param("config_file", cfg_file, std::string("/home/sdhm/catkin_ws/src/gpd_ros/cfg/python_classifier_params.cfg"));
     grasp_detector_ = new gpd::GraspDetectorPointNet(cfg_file);
     printf("Created GPD ....\n");
 
@@ -56,7 +56,7 @@ void GraspDetectionPointnet::run(int loop_rate)
         std::vector<std::unique_ptr<gpd::candidate::Hand>> grasps = detectGraspPoses();
 
         // Visualize the detected grasps in rviz.
-        if (use_rviz_)
+        if (use_rviz_ && !grasps.empty())
         {
             printf("Visualize the detected grasps in rviz.\n");
             printf("frame:%s\n", frame_.c_str());
@@ -80,10 +80,12 @@ std::vector<std::unique_ptr<gpd::candidate::Hand>> GraspDetectionPointnet::detec
     // detect grasps in the point cloud
     grasps = grasp_detector_->detectGrasps(*cloud_camera_);
 
-    // Publish the selected grasps.
-    gpd_ros::GraspConfigList selected_grasps_msg = GraspMessages::createGraspListMsg(grasps);
-    grasps_pub_.publish(selected_grasps_msg);
-    ROS_INFO_STREAM("Published " << selected_grasps_msg.grasps.size() << " highest-scoring grasps.");
+    if (!grasps.empty()) {
+        // Publish the selected grasps.
+        gpd_ros::GraspConfigList selected_grasps_msg = GraspMessages::createGraspListMsg(grasps);
+        grasps_pub_.publish(selected_grasps_msg);
+        ROS_INFO_STREAM("Published " << selected_grasps_msg.grasps.size() << " highest-scoring grasps.");
+    }
 
     return grasps;
 }
@@ -104,7 +106,9 @@ void GraspDetectionPointnet::cloud_callback(const sensor_msgs::PointCloud2& msg)
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "detect_grasps_pointnet_realsense");
-    ros::NodeHandle node("~");
+
+    //    ros::NodeHandle node("~");
+    ros::NodeHandle node; // namespace not used
 
     if(!ros::ok())
     {

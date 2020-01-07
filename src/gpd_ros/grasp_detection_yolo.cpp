@@ -6,7 +6,7 @@ GraspDetectionYolo::GraspDetectionYolo(ros::NodeHandle& node)
     cloud_camera_ = NULL;
 
 //    std::string cfg_file;
-//    node.param("config_file", cfg_file, std::string("/home/sdhm/catkin_ws/src/gpd_ros/cfg/ros_gpd_pointnet_params.cfg"));
+//    node.param("config_file", cfg_file, std::string("/home/sdhm/catkin_ws/src/gpd_ros/cfg/libtorch_classifier_params.cfg"));
 //    grasp_detector_ = new gpd::GraspDetectorPointNet(cfg_file);
 //    printf("Created GPD ....\n");
 //

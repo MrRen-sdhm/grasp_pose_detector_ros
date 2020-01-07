@@ -133,6 +133,7 @@ int main(int argc, char** argv)
 
   ros::ServiceServer service = node.advertiseService("detect_grasps", &GraspDetectionServer::detectGrasps,
                                                      &grasp_detection_server);
+
   ROS_INFO("Grasp detection service is waiting for a point cloud ...");
 
   ros::spin();

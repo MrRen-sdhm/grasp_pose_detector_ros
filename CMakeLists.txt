@@ -35,10 +35,22 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 # Libtorch
-set(CMAKE_PREFIX_PATH "/home/sdhm/libtorch/share/cmake")
-find_package(Torch)
-message(STATUS "Pytorch status:")
-message(STATUS "libraries: ${TORCH_LIBRARIES}")
+#set(CMAKE_PREFIX_PATH "/home/sdhm/libtorch/share/cmake")
+#find_package(Torch)
+#message(STATUS "Pytorch status:")
+#message(STATUS "libraries: ${TORCH_LIBRARIES}")
+
+# python
+#----------------------------CMAKE & GLOBAL PROPERTIES-------------------------#
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/python")
+#=============== Find Packages ==================================
+#include("DetectPython")
+#find_package(Boost COMPONENTS REQUIRED python)
+##==============pick python stuff=================================
+#SET(PYTHON_INCLUDE_DIRS /usr/include/python2.7)
+#SET(PYTHON_LIBRARIES ${PYTHON2_LIBRARY})
+#SET(PYTHON_EXECUTABLE ${PYTHON2_EXECUTABLE})
+#SET(PYTHON_PACKAGES_PATH ${PYTHON2_PACKAGES_PATH})
 
 ## System dependencies are found with CMake's conventions
 find_library(GPD_LIBRARY NAME gpd PATHS /usr/local/lib PATH_SUFFIXES lib NO_DEFAULT_PATH)
@@ -103,6 +115,7 @@ add_library(${PROJECT_NAME}_grasp_plotter src/${PROJECT_NAME}/grasp_plotter.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps src/gpd_ros/grasp_detection_node.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_pointnet src/gpd_ros/grasp_detection_pointnet.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_pointnet_realsense src/gpd_ros/grasp_detection_pointnet_realsense.cpp)
+add_executable(${PROJECT_NAME}_detect_grasps_server_pointnet_realsense src/gpd_ros/grasp_detection_server_pointnet_realsense.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_yolo src/gpd_ros/grasp_detection_yolo.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_server src/gpd_ros/grasp_detection_server.cpp)
 
@@ -110,6 +123,7 @@ add_executable(${PROJECT_NAME}_detect_grasps_server src/gpd_ros/grasp_detection_
 set_target_properties(${PROJECT_NAME}_detect_grasps PROPERTIES OUTPUT_NAME detect_grasps PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_pointnet PROPERTIES OUTPUT_NAME detect_grasps_pointnet PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_pointnet_realsense PROPERTIES OUTPUT_NAME detect_grasps_pointnet_realsense PREFIX "")
+set_target_properties(${PROJECT_NAME}_detect_grasps_server_pointnet_realsense PROPERTIES OUTPUT_NAME detect_grasps_server_pointnet_realsense PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_yolo PROPERTIES OUTPUT_NAME detect_grasps_yolo PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_server PROPERTIES OUTPUT_NAME detect_grasps_server PREFIX "")
 
@@ -119,51 +133,72 @@ target_link_libraries(${PROJECT_NAME}_detect_grasps
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_LIBRARY}
                       ${PCL_LIBRARIES}
-                      ${TORCH_LIBRARIES}
+#                      ${TORCH_LIBRARIES}
 #                      ${catkin_LIBRARIES}
                       ${image_transport_LIBRARIES}
                       ${cv_bridge_LIBRARIES})
+
 target_link_libraries(${PROJECT_NAME}_detect_grasps_pointnet
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_POINTNET_LIBRARY}
                       ${PCL_LIBRARIES}
-                      ${TORCH_LIBRARIES}
+#                      ${TORCH_LIBRARIES}
 #                      ${catkin_LIBRARIES}
                       ${image_transport_LIBRARIES}
                       ${cv_bridge_LIBRARIES})
+
 target_link_libraries(${PROJECT_NAME}_detect_grasps_pointnet_realsense
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_POINTNET_LIBRARY}
                       ${PCL_LIBRARIES}
-                      ${TORCH_LIBRARIES}
+#                      ${TORCH_LIBRARIES}
 #                      ${catkin_LIBRARIES}
                       ${image_transport_LIBRARIES}
                       ${cv_bridge_LIBRARIES})
+
+target_link_libraries(${PROJECT_NAME}_detect_grasps_server_pointnet_realsense
+                      ${PROJECT_NAME}_grasp_messages
+                      ${PROJECT_NAME}_grasp_plotter
+                      ${GPD_POINTNET_LIBRARY}
+                      ${PCL_LIBRARIES}
+#                      ${TORCH_LIBRARIES}
+#                      ${catkin_LIBRARIES}
+                      ${image_transport_LIBRARIES}
+                      ${cv_bridge_LIBRARIES})
+
+#target_include_directories(${PROJECT_NAME}_detect_grasps_pointnet_realsense PUBLIC
+#                      ${CMAKE_CURRENT_SOURCE_DIR}/include
+#                      ${Boost_INCLUDE_DIRS}
+#                      ${PYTHON_INCLUDE_DIRS})
+
 target_link_libraries(${PROJECT_NAME}_detect_grasps_yolo
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_POINTNET_LIBRARY}
                       ${PCL_LIBRARIES}
                       ${OpenCV_LIBS}
-                      ${TORCH_LIBRARIES}
+#                      ${TORCH_LIBRARIES}
 #                      ${catkin_LIBRARIES}
                       ${image_transport_LIBRARIES}
                       ${cv_bridge_LIBRARIES}
                       )
+
 target_link_libraries(${PROJECT_NAME}_detect_grasps_server
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_LIBRARY}
                       ${PCL_LIBRARIES}
-                      ${TORCH_LIBRARIES}
+#                      ${TORCH_LIBRARIES}
 #                      ${catkin_LIBRARIES}
                       ${image_transport_LIBRARIES}
                       ${cv_bridge_LIBRARIES})
+
 target_link_libraries(${PROJECT_NAME}_grasp_plotter
                       ${GPD_LIBRARY}
                       ${catkin_LIBRARIES})
+
 target_link_libraries(${PROJECT_NAME}_grasp_messages
                       ${GPD_LIBRARY}
                       ${catkin_LIBRARIES})

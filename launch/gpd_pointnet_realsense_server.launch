@@ -12,7 +12,7 @@
     <node if="$(arg rviz)" name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="-d $(find gpd_ros)/launch/gpd_pointnet_realsense.rviz" output="screen" />
 
     <!-- detect grasps -->
-	<node name="detect_grasps" pkg="gpd_ros" type="detect_grasps_pointnet_realsense" output="screen">
+	<node name="detect_grasps_server" pkg="gpd_ros" type="detect_grasps_server_pointnet_realsense" output="screen">
  
        <!-- What type of point cloud is used and what ROS topic it comes from -->
        <param name="cloud_topic" value="/camera/depth/color/points" />
@@ -23,8 +23,5 @@
        <!-- Rviz plotting parameters -->
        <param name="rviz_topic" value="grasps_rviz" />
 	</node>
-
-    <!-- get grasp and publish tf -->
-    <node name="get_grasps" pkg="gpd_ros" type="get_grasps.py" output="screen" />
 
 </launch>

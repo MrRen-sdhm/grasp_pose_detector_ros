@@ -92,7 +92,7 @@ visualization_msgs::Marker GraspPlotter::createFingerMarker(const Eigen::Vector3
   marker.color.a = 0.8;
   marker.color.r = 0.0;
   marker.color.g = 1.0;
-  marker.color.b = 0.0;
+  marker.color.b = 1.0;
 
   return marker;
 }
@@ -131,7 +131,7 @@ visualization_msgs::Marker GraspPlotter::createHandBaseMarker(const Eigen::Vecto
   marker.color.a = 0.8;
   marker.color.r = 0.0;
   marker.color.g = 1.0;
-  marker.color.b = 0.0;
+  marker.color.b = 1.0;
 
   return marker;
 }
