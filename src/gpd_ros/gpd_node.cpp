@@ -1,4 +1,4 @@
-#include <gpd_ros/grasp_detection_pointnet_realsense.h>
+#include <gpd_ros/gpd_node.h>
 
 GraspDetectionPointnet::GraspDetectionPointnet(ros::NodeHandle& node)
 {

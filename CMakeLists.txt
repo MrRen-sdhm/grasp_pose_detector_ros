@@ -114,17 +114,16 @@ add_library(${PROJECT_NAME}_grasp_plotter src/${PROJECT_NAME}/grasp_plotter.cpp)
 ## Declare a C++ executable
 #add_executable(${PROJECT_NAME}_detect_grasps src/gpd_ros/grasp_detection_node.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_pointnet src/gpd_ros/grasp_detection_pointnet.cpp)
-add_executable(${PROJECT_NAME}_detect_grasps_pointnet_realsense src/gpd_ros/grasp_detection_pointnet_realsense.cpp)
-add_executable(${PROJECT_NAME}_detect_grasps_server_pointnet_realsense src/gpd_ros/grasp_detection_server_pointnet_realsense.cpp)
+add_executable(${PROJECT_NAME}_gpd_node src/gpd_ros/gpd_node.cpp)
+add_executable(${PROJECT_NAME}_gpd_server src/gpd_ros/gpd_server.cpp)
 add_executable(${PROJECT_NAME}_detect_grasps_yolo src/gpd_ros/grasp_detection_yolo.cpp)
-add_executable(${PROJECT_NAME}_test src/gpd_ros/test.cpp)
 #add_executable(${PROJECT_NAME}_detect_grasps_server src/gpd_ros/grasp_detection_server.cpp)
 
 ## Rename C++ executable without prefix
 #set_target_properties(${PROJECT_NAME}_detect_grasps PROPERTIES OUTPUT_NAME detect_grasps PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_pointnet PROPERTIES OUTPUT_NAME detect_grasps_pointnet PREFIX "")
-set_target_properties(${PROJECT_NAME}_detect_grasps_pointnet_realsense PROPERTIES OUTPUT_NAME detect_grasps_pointnet_realsense PREFIX "")
-set_target_properties(${PROJECT_NAME}_detect_grasps_server_pointnet_realsense PROPERTIES OUTPUT_NAME detect_grasps_server_pointnet_realsense PREFIX "")
+set_target_properties(${PROJECT_NAME}_gpd_node PROPERTIES OUTPUT_NAME gpd_node PREFIX "")
+set_target_properties(${PROJECT_NAME}_gpd_server PROPERTIES OUTPUT_NAME gpd_server PREFIX "")
 set_target_properties(${PROJECT_NAME}_detect_grasps_yolo PROPERTIES OUTPUT_NAME detect_grasps_yolo PREFIX "")
 #set_target_properties(${PROJECT_NAME}_detect_grasps_server PROPERTIES OUTPUT_NAME detect_grasps_server PREFIX "")
 
@@ -149,7 +148,7 @@ target_link_libraries(${PROJECT_NAME}_detect_grasps_pointnet
                       ${image_transport_LIBRARIES}
                       ${cv_bridge_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_detect_grasps_pointnet_realsense
+target_link_libraries(${PROJECT_NAME}_gpd_node
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_POINTNET_LIBRARY}
@@ -159,23 +158,13 @@ target_link_libraries(${PROJECT_NAME}_detect_grasps_pointnet_realsense
                       ${image_transport_LIBRARIES}
                       ${cv_bridge_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_detect_grasps_server_pointnet_realsense
+target_link_libraries(${PROJECT_NAME}_gpd_server
                       ${PROJECT_NAME}_grasp_messages
                       ${PROJECT_NAME}_grasp_plotter
                       ${GPD_POINTNET_LIBRARY}
                       ${PCL_LIBRARIES}
 #                      ${TORCH_LIBRARIES}
 #                      ${catkin_LIBRARIES}
-                      ${image_transport_LIBRARIES}
-                      ${cv_bridge_LIBRARIES})
-
-target_link_libraries(${PROJECT_NAME}_test
-                      ${PROJECT_NAME}_grasp_messages
-                      ${PROJECT_NAME}_grasp_plotter
-                      ${GPD_POINTNET_LIBRARY}
-                      ${PCL_LIBRARIES}
-                      #                      ${TORCH_LIBRARIES}
-                      #                      ${catkin_LIBRARIES}
                       ${image_transport_LIBRARIES}
                       ${cv_bridge_LIBRARIES})
 

@@ -1,5 +1,5 @@
-#ifndef GRASP_DETECTION_TEST_H_
-#define GRASP_DETECTION_TEST_H_
+#ifndef GRASP_DETECTION_SERVER_H_
+#define GRASP_DETECTION_SERVER_H_
 
 
 // system
@@ -44,14 +44,14 @@
 typedef pcl::PointCloud<pcl::PointXYZRGBA> PointCloudRGBA;
 typedef pcl::PointCloud<pcl::PointNormal> PointCloudPointNormal;
 
-/** GraspDetectionPointnet class
+/** GraspDetectionServer class
  *
  * \brief A ROS node that can detect grasp poses in a point cloud.
  *
  * This class is a ROS node that handles all the ROS topics.
  *
 */
-class GraspDetectionPointnet
+class GraspDetectionServer
 {
 public:
 
@@ -59,15 +59,14 @@ public:
      * \brief Constructor.
      * \param node the ROS node
     */
-    GraspDetectionPointnet(ros::NodeHandle& node);
+    GraspDetectionServer(ros::NodeHandle& node);
 
     /**
      * \brief Destructor.
     */
-    ~GraspDetectionPointnet()
+    ~GraspDetectionServer()
     {
         delete cloud_camera_;
-//    delete importance_sampling_;
         delete grasp_detector_;
         delete rviz_plotter_;
     }
@@ -81,14 +80,10 @@ public:
      * \brief Detect grasp poses in a point cloud received from a ROS topic.
      * \return the list of grasp poses
     */
-    std::vector<std::unique_ptr<gpd::candidate::Hand>> detectGraspPoses();
 
     bool detectGrasps(gpd_ros::detect_grasps::Request& req, gpd_ros::detect_grasps::Response& res);
 
-    bool detectGraspsFunc();
-
     bool detectGraspsTest();
-
 
 private:
 
@@ -126,5 +121,5 @@ private:
     GraspPlotter* rviz_plotter_; ///< used to plot detected grasps in rviz
 };
 
-#endif /* GRASP_DETECTION_TEST_H_ */
+#endif /* GRASP_DETECTION_SERVER_H_ */
 
