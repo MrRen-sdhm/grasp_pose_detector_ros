@@ -3,6 +3,7 @@
 
     <!-- start the Realsense -->
     <include file="$(find realsense2_viewer)/launch/realsense2_viewer.launch" >
+        <arg name="json_file_path" value="$(find realsense2_viewer)/config/D435i-pick.json"/>
         <arg name="width" value="640" />
         <arg name="height" value="480" />
         <arg name="clip_distance" value="0.8" />

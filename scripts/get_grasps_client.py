@@ -6,11 +6,13 @@ import time
 
 from gpd_ros.srv import detect_grasps
 
+service = '/detect_grasps_server_pointnet_realsense/detect_grasps'
+# service = '/detect_grasps_server/detect_grasps'
 
 def get_grasps_client():
-    rospy.wait_for_service('detect_grasps', timeout=1)
+    rospy.wait_for_service(service, timeout=1)
     try:
-        detectGrasps = rospy.ServiceProxy('detect_grasps', detect_grasps)
+        detectGrasps = rospy.ServiceProxy(service, detect_grasps)
         resp = detectGrasps()
 #         print resp.grasp_configs.grasps
         print "[INFO] Get %d grasps" % len(resp.grasp_configs.grasps)

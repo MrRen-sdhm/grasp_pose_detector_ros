@@ -79,6 +79,8 @@ public:
     */
     std::vector<std::unique_ptr<gpd::candidate::Hand>> detectGraspPoses();
 
+    bool detectGraspsTest();
+
 
 private:
 

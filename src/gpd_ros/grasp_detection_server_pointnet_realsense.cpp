@@ -7,8 +7,9 @@ GraspDetectionServerPointnet::GraspDetectionServerPointnet(ros::NodeHandle& node
 
     std::string cfg_file;
     node.param("config_file", cfg_file, std::string("/home/sdhm/catkin_ws/src/gpd_ros/cfg/python_classifier_params.cfg"));
+    printf("[INFO] Config file: %s\n", cfg_file.c_str());
+
     grasp_detector_ = new gpd::GraspDetectorPointNet(cfg_file);
-    printf("Created GPD ....\n");
 
     // Read input cloud and ROS topics parameters.
     std::string cloud_topic;
@@ -23,6 +24,8 @@ GraspDetectionServerPointnet::GraspDetectionServerPointnet(ros::NodeHandle& node
         use_rviz_ = false;
     }
 
+    // for marker plot in rviz
+    cloud_sub_ = node.subscribe(cloud_topic, 1, &GraspDetectionServerPointnet::cloud_callback, this);
     rviz_plotter_ = new GraspPlotter(node, grasp_detector_->getHandSearchParameters().hand_geometry_);
 
     /// Realsense cloud and image receiver
@@ -34,7 +37,7 @@ GraspDetectionServerPointnet::GraspDetectionServerPointnet(ros::NodeHandle& node
     topicColor = "/" + ns + topicColor;
     topicDepth = "/" + ns + topicDepth;
 
-    receiver = std::make_shared<RealsenseReceiver>(node, topicColor, topicDepth, useExact, useCompressed);
+    receiver = std::make_shared<RealsenseReceiver>(node, topicColor, topicDepth, 10, useExact, useCompressed);
 
     ROS_INFO("Starting realsense receiver...");
     receiver->run();
@@ -45,9 +48,9 @@ GraspDetectionServerPointnet::GraspDetectionServerPointnet(ros::NodeHandle& node
 bool GraspDetectionServerPointnet::detectGrasps(gpd_ros::detect_grasps::Request& req, gpd_ros::detect_grasps::Response& res)
 {
     run_flag_ = true; // start detect grasps
-    printf("[DEBUG] start detect\n");
-
-    printf("[DEBUG] run_done: %d\n", run_done_);
+//    printf("[DEBUG] start detect\n");
+//
+//    printf("[DEBUG] run_done: %d\n", run_done_);
 
     while(true) {  // wait for detecting grasps done
         usleep(5000); // sleep for run_done flag to update
@@ -88,9 +91,30 @@ bool GraspDetectionServerPointnet::detectGraspsFunc()
             ROS_INFO_STREAM("Visualize the detected grasps in rviz.");
             rviz_plotter_->drawGrasps(grasps, frame_);
 
+//            cout << "[INFO] Grasps[0] position:" << endl << grasps[0]->getPosition() << endl;
+
             return true;
         }
     }
+
+    return false;
+}
+
+bool GraspDetectionServerPointnet::detectGraspsTest()
+{
+    std::string pcd_filename = "/home/sdhm/200109_00_cloud.pcd";
+
+    Eigen::Matrix3Xd view_points(3, 1);
+    view_points.col(0) = view_point_;
+
+    cloud_camera_ = new gpd::util::Cloud(pcd_filename, view_points);
+    ROS_INFO_STREAM("Process cloud with " << cloud_camera_->getCloudProcessed()->size() << " points.");
+
+    // preprocess the point cloud
+    grasp_detector_->preprocessPointCloud(*cloud_camera_);
+
+    // detect grasps in the point cloud
+    grasp_detector_->detectGrasps(*cloud_camera_);
 
     return false;
 }
@@ -111,12 +135,12 @@ void GraspDetectionServerPointnet::cloud_callback(const sensor_msgs::PointCloud2
 int main(int argc, char** argv)
 {
     // seed the random number generator
-//    std::srand(std::time(0));
+    std::srand(std::time(0));
 
     ros::init(argc, argv, "detect_grasps_server_pointnet_realsense");
 
-//    ros::NodeHandle node("~");
-    ros::NodeHandle node; // namespace not used
+    ros::NodeHandle node("~");
+//    ros::NodeHandle node; // namespace not used, rviz marker not show
 
     if(!ros::ok())
     {
@@ -133,10 +157,17 @@ int main(int argc, char** argv)
 
 //    ros::spin();
 
+    grasp_detection_server.detectGraspsTest();
+
+    ros::Rate rate(15); // 与采集频率接近即可
     while(ros::ok()) {
         grasp_detection_server.detectGraspsFunc();
+
+        ros::spinOnce();
+        rate.sleep();
     }
 
     ROS_INFO_STREAM("Grasp detection server shutdown.");
+    ros::shutdown();
     return 0;
 }

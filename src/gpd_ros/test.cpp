@@ -1,8 +1,8 @@
-#include <gpd_ros/grasp_detection_pointnet_realsense.h>
+#include <gpd_ros/test.h>
 
 GraspDetectionPointnet::GraspDetectionPointnet(ros::NodeHandle& node)
 {
-    printf("Init ....\n");
+    ROS_INFO("Starting grasp detection server...");
     cloud_camera_ = NULL;
 
     std::string cfg_file;
@@ -24,11 +24,8 @@ GraspDetectionPointnet::GraspDetectionPointnet(ros::NodeHandle& node)
         use_rviz_ = false;
     }
 
-    // uses ROS topics to publish grasp candidates, antipodal grasps, and grasps after clustering
-    grasps_pub_ = node.advertise<gpd_ros::GraspConfigList>("clustered_grasps", 10);
-
+    // for marker plot in rviz
     cloud_sub_ = node.subscribe(cloud_topic, 1, &GraspDetectionPointnet::cloud_callback, this);
-
     rviz_plotter_ = new GraspPlotter(node, grasp_detector_->getHandSearchParameters().hand_geometry_);
 
     /// Realsense cloud and image receiver
@@ -90,6 +87,63 @@ std::vector<std::unique_ptr<gpd::candidate::Hand>> GraspDetectionPointnet::detec
     return grasps;
 }
 
+/// Python函数无法在单独的线程中运行，会出现程序锁死的情况，Service的实现应该是另起线程了，导致C++调用Python卡死，
+/// 所以这里在主函数中使用while语句检测抓取，通过改变标志位获取数据
+bool GraspDetectionPointnet::detectGrasps(gpd_ros::detect_grasps::Request& req, gpd_ros::detect_grasps::Response& res)
+{
+    run_flag_ = true; // start detect grasps
+//    printf("[DEBUG] start detect\n");
+//
+//    printf("[DEBUG] run_done: %d\n", run_done_);
+
+    while(true) {  // wait for detecting grasps done
+        usleep(5000); // sleep for run_done flag to update
+
+        if(run_done_) {
+            run_done_ = false; // reset done flag
+
+            if (!grasps.empty()) {
+                // Response the detected grasps.
+                gpd_ros::GraspConfigList selected_grasps_msg = GraspMessages::createGraspListMsg(grasps);
+                res.grasp_configs = selected_grasps_msg;
+                ROS_INFO_STREAM("Detected " << selected_grasps_msg.grasps.size() << " highest-scoring grasps.");
+
+                return true;
+            } else return false;
+        }
+    }
+}
+
+bool GraspDetectionPointnet::detectGraspsFunc()
+{
+    if (run_flag_) {
+        run_flag_ = false;
+
+        // get cloud from realsense receiver
+        collect_cloud();
+
+        // preprocess the point cloud
+        grasp_detector_->preprocessPointCloud(*cloud_camera_);
+
+        // detect grasps in the point cloud
+        grasps = grasp_detector_->detectGrasps(*cloud_camera_);
+
+        run_done_ = true;
+
+        // Visualize the detected grasps in rviz.
+        if (use_rviz_ && !grasps.empty()) {
+            ROS_INFO_STREAM("Visualize the detected grasps in rviz.");
+            rviz_plotter_->drawGrasps(grasps, frame_);
+
+//            cout << "[INFO] Grasps[0] position:" << endl << grasps[0]->getPosition() << endl;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool GraspDetectionPointnet::detectGraspsTest()
 {
     std::string pcd_filename = "/home/sdhm/200109_00_cloud.pcd";
@@ -124,18 +178,9 @@ void GraspDetectionPointnet::cloud_callback(const sensor_msgs::PointCloud2& msg)
 
 int main(int argc, char** argv)
 {
-    // seed the random number generator
-//    std::srand(std::time(0));
-
-    ros::init(argc, argv, "detect_grasps_pointnet_realsense");
+    ros::init(argc, argv, "detect_grasps_server_pointnet_realsense");
 
     ros::NodeHandle node("~");
-//    ros::NodeHandle node; // namespace not used, rviz marker not show
-
-    if(!ros::ok())
-    {
-        return 1;
-    }
 
     int loop_rate = 15; // 与采集频率接近即可
 

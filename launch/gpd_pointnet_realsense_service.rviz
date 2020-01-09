@@ -66,7 +66,9 @@ Visualization Manager:
           Value: false
         camera_link:
           Value: false
-      Marker Scale: 0.5
+        grasp:
+          Value: true
+      Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -75,7 +77,8 @@ Visualization Manager:
         camera_link:
           camera_aligned_depth_to_color_frame:
             camera_color_optical_frame:
-              {}
+              grasp:
+                {}
           camera_color_frame:
             {}
           camera_depth_frame:
@@ -118,7 +121,8 @@ Visualization Manager:
       Marker Topic: /detect_grasps/grasps_rviz
       Name: MarkerArray
       Namespaces:
-        {}
+        finger: true
+        hand_base: true
       Queue Size: 1
       Value: true
     - Class: rviz/Image
@@ -185,10 +189,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: -1.50979638
+      Pitch: -1.1747961
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.72850561
+      Yaw: 4.59350777
     Saved: ~
 Window Geometry:
   Displays:

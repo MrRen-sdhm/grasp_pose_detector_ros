@@ -77,10 +77,11 @@ private:
     std::thread cloudReceiverThread;
 
     std::vector<int> params;
+    int rate = 15;
 
 public:
-    RealsenseReceiver(const ros::NodeHandle& node, std::string topicColor, std::string topicDepth, const bool useExact, const bool useCompressed)
-            : topicColor(std::move(topicColor)), topicDepth(std::move(topicDepth)), useExact(useExact), useCompressed(useCompressed),
+    RealsenseReceiver(const ros::NodeHandle& node, std::string topicColor, std::string topicDepth, const int rate, const bool useExact, const bool useCompressed)
+            : topicColor(std::move(topicColor)), topicDepth(std::move(topicDepth)), rate(rate), useExact(useExact), useCompressed(useCompressed),
               updateImage(false), updateCloud(false), running(false), queueSize(5), nh(node), spinner(0), it(nh)
     {
         cameraMatrixColor = cv::Mat::zeros(3, 3, CV_64F);
@@ -198,7 +199,7 @@ private:
 
         createCloud(depth, color, cloud);
 
-        ros::Rate rate(15);
+        ros::Rate loop_rate(rate);
         for(; running && ros::ok();)
         {
             if(updateCloud)
@@ -213,7 +214,7 @@ private:
             }
 
 //            ros::spinOnce();
-            rate.sleep();
+            loop_rate.sleep();
         }
 
         stop();

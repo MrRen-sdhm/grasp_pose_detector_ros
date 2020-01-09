@@ -3,13 +3,14 @@
 
     <!-- start the Realsense -->
     <include file="$(find realsense2_viewer)/launch/realsense2_viewer.launch" >
+        <arg name="json_file_path" value="$(find realsense2_viewer)/config/D435i-pick.json"/>
         <arg name="width" value="640" />
         <arg name="height" value="480" />
         <arg name="clip_distance" value="0.8" />
     </include>
 
     <!-- start the rviz -->
-    <node if="$(arg rviz)" name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="-d $(find gpd_ros)/launch/gpd_pointnet_realsense.rviz" output="screen" />
+    <node if="$(arg rviz)" name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="-d $(find gpd_ros)/launch/gpd_pointnet_realsense_service.rviz" output="screen" />
 
     <!-- detect grasps -->
 	<node name="detect_grasps_server" pkg="gpd_ros" type="detect_grasps_server_pointnet_realsense" output="screen">
